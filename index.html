@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="description" content="Game latihan mengetik bareng Oyen si kucing oren. Ketik kata di atas tikus, Oyen yang nerkam sebelum ikannya dicolong.">
+  <meta name="theme-color" content="#fff3df">
+  <title>Oyen Jaga Dapur</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700;800&family=Lilita+One&family=Nunito:wght@600;700;800;900&display=swap">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <canvas id="game" aria-label="Dapur tempat Oyen berjaga"></canvas>
+
+  <!-- HUD atas -->
+  <div id="hud" class="hidden">
+    <div class="hud-score card">
+      <div class="lbl">Skor</div>
+      <div id="score">0</div>
+      <div id="mult"></div>
+      <div id="fish-box"><div id="fish" class="fish" title="Ikan Oyen yang tersisa"></div></div>
+    </div>
+    <div id="stage">Gelombang 1</div>
+    <div class="hud-right">
+      <div class="hud-stats card">
+        <div><b id="wpm">--</b><small title="kata per menit">WPM</small></div>
+        <div><b id="acc">100%</b><small>Akurasi</small></div>
+      </div>
+      <button id="btn-pause" class="icon-btn" type="button" title="Jeda (Esc)" aria-label="Jeda">
+        <svg viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1.5"/><rect x="14" y="5" width="4" height="14" rx="1.5"/></svg>
+      </button>
+      <button id="btn-sound" class="icon-btn" type="button" title="Suara" aria-label="Suara">
+        <svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z"/><path class="wave" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div id="bossbar" class="hidden card">
+    <div class="boss-head"><span>Raja Tikus Got</span><div class="boss-hp"><i></i></div></div>
+    <div id="boss-words"></div>
+  </div>
+
+  <!-- HUD bawah -->
+  <div id="hud-bottom" class="hidden">
+    <div class="target-wrap">
+      <div id="target"></div>
+      <div id="finger"></div>
+    </div>
+    <div id="zoom-box" class="card">
+      <div class="lbl">Zoomies <kbd>Enter</kbd></div>
+      <div class="zoom-meter"><div id="zoom-fill"></div></div>
+      <div id="zoom-charges" class="paws"></div>
+    </div>
+  </div>
+
+  <div id="kb" class="kb hidden"></div>
+  <div id="banner" class="hidden"><div id="banner-title"></div><div id="banner-sub"></div></div>
+  <div id="toasts"></div>
+  <div id="caps" class="hidden">Caps Lock nyala</div>
+
+  <!-- Layar judul -->
+  <section id="scr-title" class="screen">
+    <div class="title-box">
+      <h1 class="logo"><span class="l1">Oyen</span><span class="l2">Jaga Dapur</span></h1>
+      <p class="tagline">Ketik katanya, Oyen yang nerkam!</p>
+
+      <div class="modes">
+        <button class="mode card" type="button" data-mode="serbuan">
+          <kbd>1</kbd>
+          <svg class="ico" viewBox="0 0 48 32" aria-hidden="true"><path d="M5 16Q19 2 35 16Q19 30 5 16Z"/><path d="M33 16L45 7 42 16 45 25Z"/><circle cx="27" cy="13" r="2.2" class="dot"/></svg>
+          <b>Jaga Dapur</b>
+          <span>Tikus-tikus mau nyolong ikan Oyen. Tiap 5 gelombang, Raja Tikus Got ikut turun tangan.</span>
+          <em id="rec-serbuan"></em>
+        </button>
+        <button class="mode card" type="button" data-mode="latihan">
+          <kbd>2</kbd>
+          <svg class="ico" viewBox="0 0 48 32" aria-hidden="true"><ellipse cx="24" cy="21" rx="8" ry="7"/><circle cx="13" cy="12" r="3.6"/><circle cx="19.5" cy="6.5" r="3.6"/><circle cx="28.5" cy="6.5" r="3.6"/><circle cx="35" cy="12" r="3.6"/></svg>
+          <b>Latihan Jari</b>
+          <span>Belajar per baris keyboard pakai panduan jari. Santai, nggak ada kalahnya.</span>
+          <em id="rec-latihan"></em>
+        </button>
+        <button class="mode card" type="button" data-mode="sprint">
+          <kbd>3</kbd>
+          <svg class="ico" viewBox="0 0 48 32" aria-hidden="true"><circle cx="24" cy="18" r="12"/><path d="M24 18V11M24 18l5 3" class="hand"/><rect x="20" y="1" width="8" height="4" rx="1.5"/></svg>
+          <b>Uji 60 Detik</b>
+          <span>Ukur kecepatan mengetikmu. Waktunya jalan begitu kamu mulai mengetik.</span>
+          <em id="rec-sprint"></em>
+        </button>
+      </div>
+
+      <div class="settings">
+        <div class="set-row">
+          <span class="set-lbl">Tingkat</span>
+          <div class="seg" data-set="level">
+            <button type="button" data-v="santai">Santai</button><button type="button" data-v="normal">Normal</button><button type="button" data-v="jago">Jago</button>
+          </div>
+        </div>
+        <div class="set-row">
+          <span class="set-lbl">Kata</span>
+          <div class="seg" data-set="lang">
+            <button type="button" data-v="id">Indonesia</button><button type="button" data-v="en">English</button>
+          </div>
+        </div>
+        <div class="set-row togs">
+          <button type="button" class="tog" data-set="guide">Panduan jari</button>
+          <button type="button" class="tog" data-set="music">Musik</button>
+          <button type="button" class="tog" data-set="sfx">Efek suara</button>
+        </div>
+      </div>
+      <p class="keys-help"><kbd>huruf</kbd> kunci &amp; terkam <kbd>Backspace</kbd> lepas kunci <kbd>Enter</kbd> zoomies <kbd>Esc</kbd> jeda</p>
+      <div id="progress"></div>
+    </div>
+  </section>
+
+  <!-- Pilih pelajaran -->
+  <section id="scr-lessons" class="screen hidden">
+    <div class="panel wide card">
+      <h2>Latihan Jari</h2>
+      <p class="muted">Pilih tombol yang mau dilatih. Tikusnya cuma nunggu di tempat, jadi fokus saja ke ketepatan.</p>
+      <div id="lesson-list"></div>
+      <button id="btn-back" class="btn ghost" type="button">Kembali <kbd>Esc</kbd></button>
+    </div>
+  </section>
+
+  <!-- Jeda -->
+  <section id="scr-pause" class="screen hidden">
+    <div class="panel card">
+      <h2>Jeda dulu</h2>
+      <ul class="howto">
+        <li>Ketik huruf pertama sebuah kata untuk <b>mengunci</b> tikusnya, lalu habiskan katanya.</li>
+        <li>Tikus yang kabur bawa ikan masih bisa dikejar. Ketik katanya buat <b>merebut ikan balik</b>.</li>
+        <li><b>Backspace</b> melepas kunci kalau mau ganti sasaran.</li>
+        <li><b>Enter</b> melepas mode Zoomies kalau sudah terisi.</li>
+      </ul>
+      <button id="btn-resume" class="btn" type="button">Lanjut <kbd>Esc</kbd></button>
+      <button id="btn-restart" class="btn ghost" type="button">Ulang dari awal</button>
+      <button id="btn-quit" class="btn ghost" type="button">Ke menu</button>
+    </div>
+  </section>
+
+  <!-- Hasil -->
+  <section id="scr-results" class="screen hidden">
+    <div class="panel wide card results">
+      <div id="res-best" class="badge hidden">Rekor baru!</div>
+      <h2 id="res-title">Waktu habis!</h2>
+      <p id="res-sub" class="muted"></p>
+      <div id="res-big" class="res-big"></div>
+      <div id="res-stats" class="res-stats"></div>
+      <div class="res-cols">
+        <div class="res-heat">
+          <h3>Tombol yang meleset</h3>
+          <div id="heatmap"></div>
+          <p id="heat-note" class="muted small"></p>
+        </div>
+        <div id="res-words-box" class="res-words">
+          <h3>Kata yang bikin keserimpet</h3>
+          <ul id="res-words"></ul>
+        </div>
+      </div>
+      <p id="res-tip" class="tip"></p>
+      <div class="res-btns">
+        <button id="btn-again" class="btn" type="button">Main lagi <kbd>Enter</kbd></button>
+        <button id="btn-menu" class="btn ghost" type="button">Menu <kbd>Esc</kbd></button>
+      </div>
+    </div>
+  </section>
+
+  <script src="assets/js/core.js"></script>
+  <script src="assets/js/words.js"></script>
+  <script src="assets/js/sound.js"></script>
+  <script src="assets/js/kitchen.js"></script>
+  <script src="assets/js/oyen.js"></script>
+  <script src="assets/js/mice.js"></script>
+  <script src="assets/js/keyboard.js"></script>
+  <script src="assets/js/game.js"></script>
+  <script src="assets/js/ui.js"></script>
+  <script src="assets/js/main.js"></script>
+</body>
+</html>
