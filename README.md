@@ -6,6 +6,8 @@ Selain buat seru-seruan, gamenya memang dibikin buat latihan ngetik 10 jari. Ada
 
 Gamenya statis, cuma pakai HTML, CSS, sama JavaScript biasa tanpa framework.
 
+Link game: https://yahya-nz.github.io/Game-Oyen-Jaga-Dapur/
+
 ## Tampilan
 
 **Layar judul**
